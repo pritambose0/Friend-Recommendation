@@ -1,3 +1,4 @@
+import { mongoose } from "mongoose";
 import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -206,10 +207,52 @@ const renewAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
+const getAllFriends = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const friends = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "friends",
+        foreignField: "_id",
+        as: "friends",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              username: 1,
+              fullName: 1,
+              avatar: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: "$friends",
+    },
+    {
+      $project: {
+        friends: 1,
+      },
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, friends, "Friends fetched successfully"));
+});
+
 export {
   registerUser,
   loginUser,
   getCurrentUser,
   logoutUser,
   renewAccessToken,
+  getAllFriends,
 };
