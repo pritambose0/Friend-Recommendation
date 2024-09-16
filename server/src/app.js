@@ -17,8 +17,10 @@ app.use(cookieParser());
 
 //Routes
 import userRoutes from "./routes/user.routes.js";
+import friendRequestRoutes from "./routes/friendRequest.routes.js";
 
 //Routes Declarations
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/friend-requests", friendRequestRoutes);
 
 export { app };
