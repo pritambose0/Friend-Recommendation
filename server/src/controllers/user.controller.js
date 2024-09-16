@@ -45,7 +45,7 @@ const setCookies = (res, accessToken, refreshToken) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { fullName, username, password } = req.body;
+  const { fullName, username, password, interests } = req.body;
 
   if ([fullName, username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
@@ -79,6 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
       url: avatar?.secure_url,
       publicId: avatar?.public_id,
     },
+    interests: interests || [],
   });
 
   const createdUser = await User.findById(user?._id).select(
@@ -248,6 +249,36 @@ const getAllFriends = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, friends, "Friends fetched successfully"));
 });
 
+const recommededFriends = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  const currentUser = await User.findById(userId);
+  if (!currentUser) throw new ApiError(404, "User not found");
+
+  let recommendedUsers = await User.find({
+    _id: { $ne: userId },
+    $or: [
+      { friends: { $in: [currentUser.friends] } },
+      { interests: { $in: [currentUser.interests] } },
+    ],
+  })
+    .populate({ path: "friends", select: "fullName username avatar.url" })
+    .select("-password -refreshToken");
+
+  recommendedUsers = recommendedUsers.filter((user, index, self) => {
+    return (
+      !currentUser.friends.includes(user._id) &&
+      index === self.findIndex((u) => u._id.equals(user._id))
+    );
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, recommendedUsers, "Friends fetched successfully")
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -255,4 +286,5 @@ export {
   logoutUser,
   renewAccessToken,
   getAllFriends,
+  recommededFriends,
 };

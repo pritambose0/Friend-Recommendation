@@ -40,6 +40,13 @@ const userSchema = new Schema(
         ref: "User",
       },
     ],
+    interests: [
+      {
+        type: {
+          String,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

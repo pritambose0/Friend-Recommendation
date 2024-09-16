@@ -4,6 +4,7 @@ import {
   getCurrentUser,
   loginUser,
   logoutUser,
+  recommededFriends,
   registerUser,
   renewAccessToken,
 } from "../controllers/user.controller.js";
@@ -18,5 +19,6 @@ router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/friends").get(verifyJWT, getAllFriends);
 router.route("/refresh-token").post(renewAccessToken);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
+router.route("/recommended-friends").get(verifyJWT, recommededFriends);
 
 export default router;
