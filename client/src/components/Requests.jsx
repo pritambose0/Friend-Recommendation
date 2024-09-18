@@ -33,7 +33,7 @@ function Requests({ avatar, name, userId }) {
       </div>
       <div className="space-x-2">
         <button
-          className="bg-primary text-black px-4 py-2 rounded-md  text-sm sm:text-md"
+          className="bg-primary text-black px-4 py-2 rounded-md text-sm sm:text-md"
           onClick={() =>
             handleFriendRequestMutation.mutate({
               senderId: userId,

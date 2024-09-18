@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "./services/axiosInstance";
@@ -8,6 +8,9 @@ import { Toaster } from "react-hot-toast";
 function App() {
   const dispatch = useDispatch();
   const userStatus = useSelector((state) => state.auth.status);
+
+  // Add a loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axiosInstance
@@ -21,8 +24,21 @@ function App() {
       })
       .catch((error) => {
         console.log(error);
+      })
+      .finally(() => {
+        // Set loading to false after the request is complete
+        setLoading(false);
       });
   }, [dispatch, userStatus]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Toaster />
