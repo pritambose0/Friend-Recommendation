@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { FriendRequest } from "../models/friendRequest.model.js";
 
 const generateAccessToken = async (user) => {
   try {
@@ -98,7 +99,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
+  if (!username && !password) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -124,13 +125,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { user: loggedInUser },
-        "User Logged in Successfully"
-      )
-    );
+    .json(new ApiResponse(200, loggedInUser, "User Logged in Successfully"));
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
@@ -238,8 +233,8 @@ const getAllFriends = asyncHandler(async (req, res) => {
       $unwind: "$friends",
     },
     {
-      $project: {
-        friends: 1,
+      $replaceRoot: {
+        newRoot: "$friends",
       },
     },
   ]);
@@ -252,31 +247,79 @@ const getAllFriends = asyncHandler(async (req, res) => {
 const recommededFriends = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
-  const currentUser = await User.findById(userId);
-  if (!currentUser) throw new ApiError(404, "User not found");
+  const user = await User.findById(userId).select("friends interests");
 
-  let recommendedUsers = await User.find({
-    _id: { $ne: userId },
-    $or: [
-      { friends: { $in: [currentUser.friends] } },
-      { interests: { $in: [currentUser.interests] } },
-    ],
-  })
-    .populate({ path: "friends", select: "fullName username avatar.url" })
-    .select("-password -refreshToken");
+  if (!user) {
+    return res.status(404).json(new ApiError(404, "User not found"));
+  }
 
-  recommendedUsers = recommendedUsers.filter((user, index, self) => {
-    return (
-      !currentUser.friends.includes(user._id) &&
-      index === self.findIndex((u) => u._id.equals(user._id))
-    );
-  });
+  const { friends, interests } = user;
+
+  const recommendedFriends = await User.aggregate([
+    {
+      $match: {
+        _id: { $ne: user._id, $nin: friends },
+      },
+    },
+    {
+      $addFields: {
+        mutualFriends: {
+          $setIntersection: ["$friends", friends],
+        },
+        mutualFriendsCount: {
+          $size: {
+            $setIntersection: ["$friends", friends],
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        $or: [
+          { mutualFriendsCount: { $gt: 0 } },
+          { interests: { $in: interests } },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "mutualFriends",
+        foreignField: "_id",
+        as: "mutualFriendsDetails",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        username: 1,
+        fullName: 1,
+        avatar: 1,
+        interests: 1,
+        mutualFriendsCount: 1,
+        mutualFriendsDetails: {
+          _id: 1,
+          username: 1,
+          fullName: 1,
+          avatar: 1,
+        },
+      },
+    },
+  ]);
 
   return res
     .status(200)
     .json(
-      new ApiResponse(200, recommendedUsers, "Friends fetched successfully")
+      new ApiResponse(200, recommendedFriends, "Friends fetched successfully")
     );
+});
+
+const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find({}, "_id username fullName avatar");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users fetched successfully"));
 });
 
 export {
@@ -287,4 +330,5 @@ export {
   renewAccessToken,
   getAllFriends,
   recommededFriends,
+  getAllUsers,
 };

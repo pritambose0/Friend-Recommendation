@@ -11,7 +11,7 @@ const router = Router();
 
 router.use(verifyJWT);
 router.route("/send/:receiverId").post(sendFriendRequest);
-router.route("/handle/:senderId/:receiverId").post(handleFriendRequest);
+router.route("/handle/:receiverId/:senderId").post(handleFriendRequest);
 router.route("/received").get(getFriendRequests);
 router.route("/sent").get(getSentRequests);
 

@@ -140,9 +140,8 @@ const getFriendRequests = asyncHandler(async (req, res) => {
       $unwind: "$recievedRequests",
     },
     {
-      $project: {
-        _id: 0,
-        recievedRequests: 1,
+      $replaceRoot: {
+        newRoot: "$recievedRequests",
       },
     },
   ]);
