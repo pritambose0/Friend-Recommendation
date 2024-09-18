@@ -263,9 +263,6 @@ const recommededFriends = asyncHandler(async (req, res) => {
     },
     {
       $addFields: {
-        mutualFriends: {
-          $setIntersection: ["$friends", friends],
-        },
         mutualFriendsCount: {
           $size: {
             $setIntersection: ["$friends", friends],
@@ -283,10 +280,21 @@ const recommededFriends = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "users",
-        localField: "mutualFriends",
-        foreignField: "_id",
-        as: "mutualFriendsDetails",
+        from: "friendrequests",
+        localField: "_id",
+        foreignField: "receiver",
+        as: "sentRequests",
+      },
+    },
+    {
+      $addFields: {
+        isRequestSent: {
+          $cond: {
+            if: { $in: [req.user?._id, "$sentRequests.sender"] },
+            then: true,
+            else: false,
+          },
+        },
       },
     },
     {
@@ -296,13 +304,9 @@ const recommededFriends = asyncHandler(async (req, res) => {
         fullName: 1,
         avatar: 1,
         interests: 1,
+        // sentRequests: 1,
+        isRequestSent: 1,
         mutualFriendsCount: 1,
-        mutualFriendsDetails: {
-          _id: 1,
-          username: 1,
-          fullName: 1,
-          avatar: 1,
-        },
       },
     },
   ]);
@@ -315,7 +319,54 @@ const recommededFriends = asyncHandler(async (req, res) => {
 });
 
 const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({}, "_id username fullName avatar");
+  const { search } = req.query;
+  const searchFilter = search
+    ? {
+        $or: [
+          { username: { $regex: search, $options: "i" } },
+          { fullName: { $regex: search, $options: "i" } },
+        ],
+      }
+    : {};
+
+  const users = await User.aggregate([
+    {
+      $match: {
+        _id: {
+          $ne: req.user?._id,
+        },
+        ...searchFilter,
+      },
+    },
+    {
+      $lookup: {
+        from: "friendrequests",
+        localField: "_id",
+        foreignField: "receiver",
+        as: "sentRequests",
+      },
+    },
+    {
+      $addFields: {
+        isRequestSent: {
+          $cond: {
+            if: { $in: [req.user?._id, "$sentRequests.sender"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        username: 1,
+        fullName: 1,
+        avatar: 1,
+        isRequestSent: 1,
+      },
+    },
+  ]);
 
   return res
     .status(200)

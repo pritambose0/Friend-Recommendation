@@ -26,7 +26,9 @@ function App() {
   return (
     <>
       <Toaster />
-      <Outlet />
+      <div className="w-full">
+        <Outlet />
+      </div>
     </>
   );
 }
