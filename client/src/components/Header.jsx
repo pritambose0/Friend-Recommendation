@@ -45,7 +45,7 @@ function Header({ setSearchQuery }) {
           <img
             src={userData.avatar?.url}
             alt={userData.fullName}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border p-1 sm:ml-3"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border sm:ml-3"
           />
           <button
             className="bg-primary text-black px-3 py-2 sm:px-4 sm:py-2 rounded-md text-sm sm:text-md"

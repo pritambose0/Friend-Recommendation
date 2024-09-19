@@ -19,18 +19,18 @@ function Signup() {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axiosInstance.post(
-        "/users/register",
-        {
-          ...data,
-          avatar: data.avatar[0],
+      const formData = new FormData();
+      formData.append("fullName", data.fullName);
+      formData.append("username", data.username);
+      formData.append("password", data.password);
+      formData.append("avatar", data.avatar[0]);
+
+      const response = await axiosInstance.post("/users/register", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      });
+
       return response.data?.data;
     },
     onSuccess: () => {
