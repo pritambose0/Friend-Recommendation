@@ -1,6 +1,7 @@
 import FriendsList from "../components/FriendsList";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../services/axiosInstance";
+import { useSelector } from "react-redux";
 
 const FriendsListSkeleton = () => (
   <div className="animate-pulse space-y-4">
@@ -11,13 +12,14 @@ const FriendsListSkeleton = () => (
 );
 
 function Users() {
+  const userId = useSelector((state) => state.auth.userData._id);
   const {
     data: friends,
     isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: ["friends"],
+    queryKey: ["friends", userId],
     queryFn: async () => {
       const response = await axiosInstance.get("/users/friends");
       return response.data?.data || [];
