@@ -67,6 +67,7 @@ function FriendReqSection({ searchQuery }) {
                 name={user.fullName}
                 userId={user._id}
                 isRequestSent={user.isRequestSent}
+                isFriend={user.isFriend}
               />
             ))
           )}

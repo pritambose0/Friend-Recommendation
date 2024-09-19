@@ -358,12 +358,24 @@ const getAllUsers = asyncHandler(async (req, res) => {
       },
     },
     {
+      $addFields: {
+        isFriend: {
+          $cond: {
+            if: { $in: [req.user?._id, "$friends"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
       $project: {
         _id: 1,
         username: 1,
         fullName: 1,
         avatar: 1,
         isRequestSent: 1,
+        isFriend: 1,
       },
     },
   ]);
@@ -371,6 +383,30 @@ const getAllUsers = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, users, "Users fetched successfully"));
+});
+
+const deleteFriend = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { friendId } = req.params;
+  const user = await User.findById(userId);
+  const friend = await User.findById(friendId);
+  if (!user || !friend) {
+    throw new ApiError(404, "User or friend not found");
+  }
+
+  if (!user.friends.includes(friendId)) {
+    throw new ApiError(400, "User is not a friend");
+  }
+
+  user.friends = user.friends.filter((id) => id.toString() !== friendId);
+  friend.friends = friend.friends.filter((id) => id.toString() !== userId);
+
+  await user.save();
+  await friend.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Friend deleted successfully"));
 });
 
 export {
@@ -382,4 +418,5 @@ export {
   getAllFriends,
   recommededFriends,
   getAllUsers,
+  deleteFriend,
 };

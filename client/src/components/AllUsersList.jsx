@@ -2,7 +2,7 @@ import axiosInstance from "../services/axiosInstance";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-function AllUsersList({ avatar, name, isRequestSent, userId }) {
+function AllUsersList({ avatar, name, isRequestSent, userId, isFriend }) {
   const queryClient = useQueryClient();
 
   const handleAddFriendMutation = useMutation({
@@ -30,10 +30,15 @@ function AllUsersList({ avatar, name, isRequestSent, userId }) {
         <span className="text-sm sm:text-md">{name}</span>
       </div>
       <button
-        className="bg-primary text-black text-sm sm:text-md px-4 py-2 rounded-md"
+        className="bg-primary text-black text-sm sm:text-md px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={() => handleAddFriendMutation.mutate(userId)}
+        disabled={
+          isFriend || isRequestSent || handleAddFriendMutation.isLoading
+        }
       >
-        {handleAddFriendMutation.isSuccess || isRequestSent
+        {isFriend
+          ? "Friends"
+          : isRequestSent || handleAddFriendMutation.isSuccess
           ? "Request Sent"
           : "Add Friend"}
       </button>

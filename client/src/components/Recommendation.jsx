@@ -31,8 +31,9 @@ function Recommendation({ avatar, name, userId, isRequestSent }) {
         <span className="text-sm sm:text-md">{name}</span>
       </div>
       <button
-        className="bg-primary text-black px-4 py-2 rounded-md text-sm sm:text-md"
+        className="bg-primary text-black px-4 py-2 rounded-md text-sm sm:text-md disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={() => handleAddFriendMutation.mutate(userId)}
+        disabled={isRequestSent || handleAddFriendMutation.isLoading}
       >
         {handleAddFriendMutation.isSuccess || isRequestSent
           ? "Request Sent"

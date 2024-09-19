@@ -15,13 +15,11 @@ function Requests({ avatar, name, userId }) {
       return response.data?.data;
     },
     onSuccess: () => {
-      toast.success("Friend request accepted successfully");
+      toast.success("Successfull");
       queryClient.invalidateQueries(["requests"]);
     },
     onError: (error) => {
-      toast.error(
-        error?.response?.data?.message || "Error accepting friend request"
-      );
+      toast.error(error?.response?.data?.message || "Error deleting friend");
       console.log(error);
     },
   });
@@ -34,7 +32,8 @@ function Requests({ avatar, name, userId }) {
       </div>
       <div className="space-x-2">
         <button
-          className="bg-primary text-black px-4 py-2 rounded-md text-sm sm:text-md"
+          className="bg-primary text-black px-4 py-2 rounded-md text-sm sm:text-md disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={handleFriendRequestMutation.isLoading}
           onClick={() =>
             handleFriendRequestMutation.mutate({
               senderId: userId,
@@ -45,7 +44,8 @@ function Requests({ avatar, name, userId }) {
           Accept
         </button>
         <button
-          className="bg-gray-700 text-white px-4 py-2 rounded-md"
+          className="bg-gray-700 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={handleFriendRequestMutation.isLoading}
           onClick={() =>
             handleFriendRequestMutation.mutate({
               senderId: userId,

@@ -1,28 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import axiosInstance from "../services/axiosInstance";
-import { useSelector } from "react-redux";
 
 function FriendsList({ avatar, name, userId }) {
-  const receiverId = useSelector((state) => state.auth.userData._id);
   const queryClient = useQueryClient();
 
   const handleFriendRemoveMutation = useMutation({
-    mutationFn: async ({ senderId, status }) => {
-      const response = await axiosInstance.post(
-        `/friend-requests/handle/${receiverId}/${senderId}`,
-        { status }
+    mutationFn: async (friendId) => {
+      const response = await axiosInstance.delete(
+        `/users/remove-friend/${friendId}`
       );
       return response.data?.data;
     },
     onSuccess: () => {
-      toast.success("Friend request accepted successfully");
-      queryClient.invalidateQueries(["requests"]);
+      toast.success("Deleted friend successfully");
+      queryClient.invalidateQueries(["requests", "friends"]);
     },
     onError: (error) => {
-      toast.error(
-        error?.response?.data?.message || "Error accepting friend request"
-      );
+      toast.error(error?.response?.data?.message || "Error handling request");
       console.log(error);
     },
   });
@@ -34,12 +29,7 @@ function FriendsList({ avatar, name, userId }) {
       </div>
       <button
         className="text-white bg-red-500 px-4 py-2 rounded-md text-sm sm:text-md"
-        onClick={() =>
-          handleFriendRemoveMutation.mutate({
-            senderId: userId,
-            status: "rejected",
-          })
-        }
+        onClick={() => handleFriendRemoveMutation.mutate(userId)}
       >
         Unfriend
       </button>
