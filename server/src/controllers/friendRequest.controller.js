@@ -25,6 +25,18 @@ const sendFriendRequest = asyncHandler(async (req, res) => {
     throw new ApiError(409, "Friend request already sent");
   }
 
+  const friendRequestExists = await FriendRequest.findOne({
+    $or: [
+      // The sender has sent a request to the receiver
+      { sender: senderId, receiver: receiverId },
+      // The receiver has sent a request to the sender
+      { sender: receiverId, receiver: senderId },
+    ],
+  });
+
+  if (friendRequestExists) {
+    throw new ApiError(409, "Friend request already exists");
+  }
   const newFriendRequest = await FriendRequest.create({
     sender: senderId,
     receiver: receiverId,
