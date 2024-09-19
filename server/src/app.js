@@ -25,7 +25,7 @@ import healthcheckRoute from "./routes/healthcheck.routes.js";
 //Routes Declarations
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/friend-requests", friendRequestRoutes);
-app.use("/healthcheck", healthcheckRoute);
+app.use("/api/v1/healthcheck", healthcheckRoute);
 
 app.use(errorHandler);
 export { app };
