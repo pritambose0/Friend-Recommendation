@@ -29,7 +29,7 @@ function FriendReqSection({ searchQuery }) {
     isLoading: isLoadingUsers,
     refetch: refetchUsers,
   } = useQuery({
-    queryKey: ["users", searchQuery],
+    queryKey: ["users", searchQuery, userId],
     queryFn: async () => {
       const response = await axiosInstance.get(`/users?search=${searchQuery}`);
       return response.data?.data || [];
