@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 
 function Recommendation({ avatar, name, userId, isRequestSent }) {
   const queryClient = useQueryClient();
-  console.log("IS REQUEST SENT", isRequestSent);
 
   const handleAddFriendMutation = useMutation({
     mutationFn: async (userId) => {

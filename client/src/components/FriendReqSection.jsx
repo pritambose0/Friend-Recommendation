@@ -3,6 +3,7 @@ import Requests from "../components/Requests";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../services/axiosInstance";
 import { useEffect } from "react";
+import { useSelector } from "react-redux";
 
 const UserListSkeleton = () => (
   <div className="animate-pulse space-y-4">
@@ -21,6 +22,8 @@ const RequestsSkeleton = () => (
 );
 
 function FriendReqSection({ searchQuery }) {
+  const userId = useSelector((state) => state.auth.userData._id);
+
   const {
     data: users,
     isLoading: isLoadingUsers,
@@ -35,7 +38,7 @@ function FriendReqSection({ searchQuery }) {
   });
 
   const { data: requests, isLoading: isLoadingRequests } = useQuery({
-    queryKey: ["requests"],
+    queryKey: ["requests", userId],
     queryFn: async () => {
       const response = await axiosInstance.get("/friend-requests/received");
       return response.data?.data || [];

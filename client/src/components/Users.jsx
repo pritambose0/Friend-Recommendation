@@ -38,6 +38,7 @@ function Users() {
               key={friend._id}
               avatar={friend.avatar?.url}
               name={friend.fullName}
+              userId={friend._id}
             />
           ))
         ) : (

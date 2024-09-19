@@ -1,14 +1,14 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../services/axiosInstance";
 import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
 
 function Requests({ avatar, name, userId }) {
   const receiverId = useSelector((state) => state.auth.userData._id);
-
+  const queryClient = useQueryClient();
   const handleFriendRequestMutation = useMutation({
     mutationFn: async ({ senderId, status }) => {
-      const response = await axiosInstance.put(
+      const response = await axiosInstance.post(
         `/friend-requests/handle/${receiverId}/${senderId}`,
         { status }
       );
@@ -16,6 +16,7 @@ function Requests({ avatar, name, userId }) {
     },
     onSuccess: () => {
       toast.success("Friend request accepted successfully");
+      queryClient.invalidateQueries(["requests"]);
     },
     onError: (error) => {
       toast.error(
