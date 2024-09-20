@@ -17,14 +17,6 @@ const sendFriendRequest = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Sender or receiver not found");
   }
 
-  const friendRequest = await FriendRequest.findOne({
-    sender: senderId,
-    receiver: receiverId,
-  });
-  if (friendRequest) {
-    throw new ApiError(409, "Friend request already sent");
-  }
-
   const friendRequestExists = await FriendRequest.findOne({
     $or: [
       // The sender has sent a request to the receiver
